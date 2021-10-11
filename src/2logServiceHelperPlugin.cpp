@@ -22,15 +22,27 @@
 #include "ServiceHelperService.h"
 #include "ServiceHelperListResourceFactory.h"
 #include <QDebug>
+#include <QDir>
 
 _2logServiceHelperPlugin::_2logServiceHelperPlugin(QObject *parent) : IPlugin(parent)
 {
 
 }
 
+_2logServiceHelperPlugin::~_2logServiceHelperPlugin()
+{
+    qDebug()<<"FOO";
+    _serviceProcess.terminate();
+}
+
 bool _2logServiceHelperPlugin::init(QVariantMap parameters)
 {
     Q_UNUSED(parameters)
+
+    QString path = QDir::currentPath()+"/../../../services/2log.services.app/Contents/MacOS/2log.services";
+    qDebug()<<path;
+
+    _serviceProcess.start(path, QStringList(  ));
     ResourceManager::instance()->addResourceFactory(new ServiceHelperListResourceFactory(this));
     ServiceManager::instance()->registerService(new ServiceHelperService(this));
     return true;

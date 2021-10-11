@@ -22,6 +22,7 @@
 #include <QObject>
 #include "IPlugin.h"
 #include "2logmachinecontrolling_global.h"
+#include <QProcess>
 
 class TWOLOGMACHINECONTROLLINGSHARED_EXPORT _2logServiceHelperPlugin : public  IPlugin
 {
@@ -31,9 +32,13 @@ class TWOLOGMACHINECONTROLLINGSHARED_EXPORT _2logServiceHelperPlugin : public  I
 
 public:
     explicit _2logServiceHelperPlugin(QObject *parent = nullptr);
+    ~ _2logServiceHelperPlugin();
     virtual bool init(QVariantMap parameters);
     virtual bool shutdown();
     virtual QString getPluginName();
+
+private:
+    QProcess _serviceProcess;
 
 signals:
 
