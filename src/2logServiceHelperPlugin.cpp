@@ -18,10 +18,14 @@
 
 #include "2logServiceHelperPlugin.h"
 #include "Server/Resources/ResourceManager/ResourceManager.h"
+#include "Server/Authentication/DefaultAuthenticator.h"
+#include "Server/Authentication/User.h"
 #include "Server/Services/ServiceManager.h"
+#include "Services/FablabAuthenticator.h"
 #include "ServiceHelperService.h"
 #include "ServiceHelperListResourceFactory.h"
 #include <QDebug>
+#include <QUuid>
 #include <QDir>
 
 _2logServiceHelperPlugin::_2logServiceHelperPlugin(QObject *parent) : IPlugin(parent)
@@ -31,7 +35,6 @@ _2logServiceHelperPlugin::_2logServiceHelperPlugin(QObject *parent) : IPlugin(pa
 
 _2logServiceHelperPlugin::~_2logServiceHelperPlugin()
 {
-    qDebug()<<"FOO";
     _serviceProcess.terminate();
 }
 
@@ -39,10 +42,24 @@ bool _2logServiceHelperPlugin::init(QVariantMap parameters)
 {
     Q_UNUSED(parameters)
 
-    QString path = QDir::currentPath()+"/../../../services/2log.services.app/Contents/MacOS/2log.services";
-    qDebug()<<path;
+    QString path;
+    #ifdef Q_OS_MACOS
+        path = QDir::currentPath()+"/../../../services/2log.services.app/Contents/MacOS/2log.services";
+    #else
+        path =  QDir::currentPath()+"/services/2log.services";
+    #endif
 
-    _serviceProcess.start(path, QStringList(  ));
+
+    QString user = "service";
+    QString pass = QUuid::createUuid().toString();
+
+    userPtr serviceUser =  DefaultAuthenticator::instance()->createUser(user, pass);
+    serviceUser->setUserPermission("service",true,false);
+    serviceUser->setUserPermission("lab.service", true, false);
+    serviceUser->setUserPermission("lab.admin", true);
+    FablabAuthenticator::instance()->addUser("service", iUserPtr(serviceUser));
+    QProcess::execute("killall", {"2log.services"});
+    _serviceProcess.start(path, {"-p", pass,"-u", user});
     ResourceManager::instance()->addResourceFactory(new ServiceHelperListResourceFactory(this));
     ServiceManager::instance()->registerService(new ServiceHelperService(this));
     return true;
