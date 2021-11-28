@@ -83,7 +83,8 @@ IResource::ModificationResult ServiceHelperListResource::removeItem(QString uuid
 
 bool ServiceHelperListResource::deleteItem(QString token, QString deviceID)
 {
-    QListIterator<QVariant> it(getListData());
+    auto tempListData = getListData();
+    QListIterator<QVariant> it(tempListData);
     int idx = -1;
     while(it.hasNext())
     {
