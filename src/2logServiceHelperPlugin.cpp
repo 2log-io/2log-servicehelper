@@ -46,7 +46,7 @@ bool _2logServiceHelperPlugin::init(QVariantMap parameters)
     #ifdef Q_OS_MACOS
         path = QDir::currentPath()+"/../../../services/2log.services.app/Contents/MacOS/2log.services";
     #elif DOCKER
-         path =  "/root/build/bin/services/2log.services";
+         path =  "2log/services/2log.services";
     #else
         path =  QDir::currentPath()+"/services/2log.services";
     #endif
