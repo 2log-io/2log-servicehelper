@@ -30,7 +30,7 @@
 
 _2logServiceHelperPlugin::_2logServiceHelperPlugin(QObject *parent) : IPlugin(parent)
 {
-
+    connect(&_serviceProcess, &QProcess::errorOccurred, this, &_2logServiceHelperPlugin::qprocessError);
 }
 
 _2logServiceHelperPlugin::~_2logServiceHelperPlugin()
@@ -45,10 +45,11 @@ bool _2logServiceHelperPlugin::init(QVariantMap parameters)
     QString path;
     #ifdef Q_OS_MACOS
         path = QDir::currentPath()+"/../../../services/2log.services.app/Contents/MacOS/2log.services";
+    #elif DOCKER
+         path =  "/root/build/bin/services/2log.services";
     #else
         path =  QDir::currentPath()+"/services/2log.services";
     #endif
-
 
     QString user = "service";
     QString pass = QUuid::createUuid().toString();
@@ -58,6 +59,7 @@ bool _2logServiceHelperPlugin::init(QVariantMap parameters)
     serviceUser->setUserPermission("lab.service", true, false);
     serviceUser->setUserPermission("lab.admin", true);
     FablabAuthenticator::instance()->addUser("service", iUserPtr(serviceUser));
+    qDebug()<<"Start process: "<<path;
     QProcess::execute("killall", {"2log.services"});
     _serviceProcess.start(path, {"-p", pass,"-u", user});
     ResourceManager::instance()->addResourceFactory(new ServiceHelperListResourceFactory(this));
@@ -73,4 +75,10 @@ bool _2logServiceHelperPlugin::shutdown()
 QString _2logServiceHelperPlugin::getPluginName()
 {
     return "2log-servicehelper";
+}
+
+void _2logServiceHelperPlugin::qprocessError(QProcess::ProcessError error)
+{
+    Q_UNUSED(error)
+    qDebug()<< "Process error occured!" << _serviceProcess.errorString();
 }

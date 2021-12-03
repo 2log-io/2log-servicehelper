@@ -40,6 +40,8 @@ public:
 private:
     QProcess _serviceProcess;
 
+private slots:
+    void qprocessError(QProcess::ProcessError error);
 signals:
 
 public slots:
