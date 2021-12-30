@@ -55,6 +55,7 @@ bool _2logServiceHelperPlugin::init(QVariantMap parameters)
     QString pass = QUuid::createUuid().toString();
 
     userPtr serviceUser =  DefaultAuthenticator::instance()->createUser(user, pass);
+    serviceUser->setSessionExpiration(-1);
     serviceUser->setUserPermission("service",true,false);
     serviceUser->setUserPermission("lab.service", true, false);
     serviceUser->setUserPermission("lab.admin", true);
